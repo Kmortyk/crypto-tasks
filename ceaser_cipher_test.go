@@ -6,6 +6,7 @@ import (
 
 // TODO сумма логрифмов для скора
 // TODO применить словарь для разбиения
+// TODO бенчмарки и оптимизация
 
 func TestDecrypt(t *testing.T) {
 	first := "gluhtlishjrvbadvyyplkaohavbyjpwolypzavvdlhrvuuleatlzzhnlzdpajoavcpnlulyljpwolyrlfdvykpzaolopkkluzftivsvmklhaoputfmhcvypalovsilpuluk"
@@ -116,8 +117,6 @@ func TestDecryptDirs(t *testing.T) {
 		"011": '3',
 		"100": '4',
 		"101": '5',
-		"110": '6',
-		"111": '7',
 	}
 	for i := 0; i < len(xored); i += 3 {
 		if i >= len(xored) || i+1 >= len(xored) || i+2 >= len(xored) {
@@ -127,12 +126,6 @@ func TestDecryptDirs(t *testing.T) {
 		polybius[i/3] = digits[str]
 	}
 
-	// 525150535130034030405035055210105230021025505103305200455350155053255035203 150411551020351514525455353452150512414502550005110535015505025511052513150411531304520100352424232222510105150514015503005454151103522
-	// 525150535130034030405435055210105230021025505103305200455350155053255035203 356220162070653241755333375600707320713543247164611631004723002514257031175551602640416054366133713172512036772002304514006020057461036517520
-
-	// 101010101001101000101011101001011000000011100000011000100000101100011101000101101010001000001000101010011000000010001000010101101000101001000011011000101010000000100101101011101000001101101000101011010101101000011101010000011 011101110010010000001110010000111000110101011010100001111101101011011011011111101110000000111000111011010000111001011101100011010100111001110100110001001110011001000000100111010011000000010101001100010101111000011001001111101101101001110000010110100000100001110000101100011110110001011011111001011001111010101001010000011110111111010000000010011000100101001100000000110000010000000101111100110001000011110101001111101010000
-	// 101010101001101000101011101001011000000011100000011000100000101000011101000101101010001000001000101010011000000010001000010101101000101001000011011000101010000000100101101011101000001101101000101011010101101000011101010000011 00110100010000100110110100100001000001110100110100110010101010110010110101110101110010101000110100010100101010000110010100001010110100000000010100100100010101110100000110110100010100001010110100100100010101010100101100110100010000100110101100101100010010101000000100000001110101010001010001001101001001001010100100000100010100110100010100110000000110110100001100000010110010110000110100100100001110101001010
-
 	t.Log(string(xored))
 	t.Log(string(polybius))
 
@@ -141,5 +134,217 @@ func TestDecryptDirs(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	t.Log(decrypted) //alarm	     vault                               end
+	// start CIBC bank see schematics for alarm and vault hit tomorrow at 10 am after alaam test vaulv code is 5567 meet at blackout en7
+}
+
+func TestEncryptPolybius(t *testing.T) {
+	table := [][]rune{
+		{'a', 'b', 'c', 'd', 'e', 'f'},
+		{'g', 'h', 'i', 'j', 'k', 'l'},
+		{'m', 'n', 'o', 'p', 'q', 'r'},
+		{'s', 't', 'u', 'v', 'w', 'x'},
+		{'y', 'z', '1', '2', '3', '4'},
+		{'5', '6', '7', '8', '9', '0'},
+	}
+
+	t.Log("alarm", EncryptPolybius(table, "alarm", false))
+	t.Log("start", EncryptPolybius(table, "start", false))
+	t.Log("vault", EncryptPolybius(table, "vault", false))
+	t.Log("5567", EncryptPolybius(table, "5567", false))
+	t.Log("10am", EncryptPolybius(table, "10am", false))
+	t.Log("bank", EncryptPolybius(table, "bank", false))
+}
+
+/* -- 1 ------------------------------------------------------------------------------------------------------------- */
+func TestEncryptMessageAndPad(t *testing.T) {
+	var err error
+
+	message := "me"
+	pad := "open me to read"
+
+	// pad
+	pad, err = Normalize(pad)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pad = VowelConsonantsBinarization(pad)
+
+	// message
+	message = EncryptPolybius([][]rune{
+		{'f', 'g', 'h', 'i', 'j', 'k'},
+		{'e', 'x', 'y', 'z', '0', 'l'},
+		{'d', 'w', '7', '8', '1', 'm'},
+		{'c', 'v', '6', '9', '2', 'n'},
+		{'b', 'u', '5', '4', '3', 'o'},
+		{'a', 't', 's', 'r', 'q', 'p'},
+	}, message, true)
+	digits := map[rune]string{
+		'0': "000",
+		'1': "001",
+		'2': "010",
+		'3': "011",
+		'4': "100",
+		'5': "101",
+	}
+	message2 := ""
+	for _, ch := range message {
+		message2 += digits[ch]
+	}
+
+	// result
+	t.Log(StrXOR(message2, pad))
+}
+
+func TestOnesInLetter(t *testing.T) {
+	letter := "w"
+
+	letter = EncryptPolybius([][]rune{
+		{'f', 'g', 'h', 'i', 'j', 'k'},
+		{'e', 'x', 'y', 'z', '0', 'l'},
+		{'d', 'w', '7', '8', '1', 'm'},
+		{'c', 'v', '6', '9', '2', 'n'},
+		{'b', 'u', '5', '4', '3', 'o'},
+		{'a', 't', 's', 'r', 'q', 'p'},
+	}, letter, true)
+	digits := map[rune]string{
+		'0': "000",
+		'1': "001",
+		'2': "010",
+		'3': "011",
+		'4': "100",
+		'5': "101",
+	}
+
+	count := 0
+	for _, ch := range letter {
+		if digits[ch][0] == '1' {
+			count++
+		}
+		if digits[ch][1] == '1' {
+			count++
+		}
+		if digits[ch][2] == '1' {
+			count++
+		}
+	}
+
+	t.Log(count)
+}
+
+func TestDirToBin(t *testing.T) {
+	dir := "uur"
+
+	cardinalBinary := map[string]string{
+		"u": "00",
+		"r": "01",
+		"d": "10",
+		"l": "11",
+	}
+	intermediateBinary := map[string]string{
+		"dr": "00",
+		"dl": "01",
+		"ul": "10",
+		"ur": "11",
+	}
+
+	// to binary
+	letterBinary := cardinalBinary[dir[0:1]] + intermediateBinary[dir[1:]]
+	t.Log(letterBinary)
+}
+
+func TestDirWithPad(t *testing.T) {
+	dirs := []string{"uur", "lur", "rur", "rdl", "rdl", "dul"}
+	cardinalBinary := map[string]string{
+		"u": "00",
+		"r": "01",
+		"d": "10",
+		"l": "11",
+	}
+	intermediateBinary := map[string]string{
+		"dr": "00",
+		"dl": "01",
+		"ul": "10",
+		"ur": "11",
+	}
+
+	letterBinary := ""
+	for i := range dirs {
+		char := dirs[i]
+		letterBinary += cardinalBinary[char[0:1]]
+		letterBinary += intermediateBinary[char[1:]]
+	}
+
+	pad, err := Normalize("did you decrypt the final code?")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pad = VowelConsonantsBinarization(pad)
+	xored := StrXOR(letterBinary, pad)
+
+	polybius := make([]rune, len(xored)/3)
+	digits := map[string]rune{
+		"000": '0',
+		"001": '1',
+		"010": '2',
+		"011": '3',
+		"100": '4',
+		"101": '5',
+	}
+	for i := 0; i < len(xored); i += 3 {
+		if i >= len(xored) || i+1 >= len(xored) || i+2 >= len(xored) {
+			break
+		}
+		str := string(xored[i]) + string(xored[i+1]) + string(xored[i+2])
+		polybius[i/3] = digits[str]
+	}
+
+	decrypted, err := DecryptPolybiusSpiral(string(polybius))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	t.Log(decrypted)
+}
+
+func TestDirToDigits(t *testing.T) {
+	dir := "dul"
+
+	cardinalBinary := map[string]string{
+		"u": "00",
+		"r": "01",
+		"d": "10",
+		"l": "11",
+	}
+	intermediateBinary := map[string]string{
+		"dr": "00",
+		"dl": "01",
+		"ul": "10",
+		"ur": "11",
+	}
+	digits := map[string]string{
+		"00": "0",
+		"01": "1",
+		"10": "2",
+		"11": "3",
+	}
+
+	c := dir[0:1]
+	i := dir[1:]
+
+	cb := cardinalBinary[c]
+	ib := intermediateBinary[i]
+
+	t.Log(cb, ib)
+	t.Log(digits[cb] + digits[ib])
+}
+
+func TestCalcPad(t *testing.T) {
+	pad, err := Normalize("One cloudy afternoon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	pad = VowelConsonantsBinarization(pad)
+
+	t.Log(pad)
 }

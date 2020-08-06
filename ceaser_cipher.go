@@ -3,6 +3,7 @@ package crypto_tasks
 import (
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -89,14 +90,6 @@ func VowelConsonantsBinarization(message string) string {
 }
 
 func DecryptPolybiusSpiral(message string) (string, error) {
-	//table := [][]rune {
-	//	{' ', ' ', ' ', ' ', ' ', ' '},
-	//	{' ', ' ', ' ', ' ', ' ', ' '},
-	//	{' ', ' ', 'a', ' ', ' ', ' '},
-	//	{' ', ' ', 'b', ' ', ' ', ' '},
-	//	{' ', ' ', ' ', ' ', ' ', ' '},
-	//	{' ', ' ', ' ', ' ', ' ', ' '},
-	//}
 	table := [][]rune{
 		/*0*/ /*1*/ /*2*/ /*3*/ /*4*/ /*5*/
 		/*0*/ {'f', 'g', 'h', 'i', 'j', 'k'},
@@ -115,8 +108,46 @@ func DecryptPolybiusSpiral(message string) (string, error) {
 	for i := 0; i < len(message); i += 2 {
 		row := message[i] - '0'
 		col := message[i+1] - '0'
-		result[i/2] = byte(table[col][row])
+		result[i/2] = byte(table[row][col])
 	}
 
 	return string(result), nil
+}
+
+func EncryptPolybius(charTable [][]rune, message string, zeroIdx bool) string {
+	flattened := make(map[rune]string)
+
+	for i, row := range charTable {
+		for j, char := range row {
+			if zeroIdx {
+				flattened[char] = strconv.Itoa(i) + strconv.Itoa(j)
+			} else {
+				flattened[char] = strconv.Itoa(i+1) + strconv.Itoa(j+1)
+			}
+		}
+	}
+	result := ""
+	for _, char := range message {
+		result += flattened[char]
+	}
+	return result
+}
+
+func StrXOR(first, second string) string {
+	var min int
+	if len(first) < len(second) {
+		min = len(first)
+	} else {
+		min = len(second)
+	}
+
+	result := make([]rune, min)
+	for i := 0; i < min; i++ {
+		if first[i] == second[i] {
+			result[i] = '0'
+		} else {
+			result[i] = '1'
+		}
+	}
+	return string(result)
 }
