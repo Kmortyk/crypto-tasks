@@ -156,7 +156,6 @@ func TestEncryptPolybius(t *testing.T) {
 	t.Log("bank", EncryptPolybius(table, "bank", false))
 }
 
-/* -- 1 ------------------------------------------------------------------------------------------------------------- */
 func TestEncryptMessageAndPad(t *testing.T) {
 	var err error
 
