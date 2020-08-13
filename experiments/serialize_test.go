@@ -1,4 +1,4 @@
-package crypto_tasks
+package experiments
 
 import (
 	"encoding/json"

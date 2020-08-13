@@ -1,4 +1,4 @@
-package crypto_tasks
+package khan
 
 import (
 	"errors"
